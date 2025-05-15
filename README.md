@@ -2,7 +2,7 @@
 
 A JavaScript console extension for Adobe Premiere Pro that allows you to execute ExtendScript commands directly within Premiere Pro and view their results in real-time.
 
-![Premiere Pro Console Screenshot](screenshot.png)
+![Premiere Pro Console Screenshot](https://github.com/ibrahimsaber1/PremierePro-Console/blob/main/img/console.png)
 
 ## Features
 
