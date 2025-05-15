@@ -1,117 +1,65 @@
-// Main function to execute code from the console
-function executeConsoleCode(codeString) {
+// Execute code and return the result
+function executeCode(code) {
     try {
-        // Prepare a function that will evaluate the code and properly format the result
-        var result = eval("(function() { try { var result = " + codeString + "; return formatResult(result); } catch(e) { return 'ERROR:' + e.toString(); } })()");
-        return result;
+        var result = eval(code);
+        return formatOutput(result);
     } catch (e) {
         return "ERROR:" + e.toString();
     }
 }
 
-// Helper function to format different types of results
-function formatResult(result) {
+// Format the output
+function formatOutput(result) {
     if (result === undefined) {
         return "undefined";
     } else if (result === null) {
         return "null";
-    } else if (typeof result === "string") {
-        return '"' + result + '"';
-    } else if (typeof result === "number" || typeof result === "boolean") {
-        return result.toString();
-    } else if (result instanceof Array) {
-        return formatArray(result);
     } else if (typeof result === "object") {
-        return formatObject(result);
-    } else {
-        return result.toString();
-    }
-}
-
-// Format array results
-function formatArray(arr) {
-    try {
-        var result = "[";
-        
-        // Limit to first 100 items for very large arrays
-        var length = Math.min(arr.length, 100);
-        var hasMore = arr.length > 100;
-        
-        for (var i = 0; i < length; i++) {
-            if (i > 0) result += ", ";
-            
-            // Handle circular references and deeply nested structures
-            try {
-                result += formatResult(arr[i]);
-            } catch (e) {
-                result += "[Object]";
+        try {
+            // Special case for Premiere Pro objects with toString
+            if (typeof result.toString === "function") {
+                var str = result.toString();
+                if (str !== "[object Object]") {
+                    return str;
+                }
             }
             
-            // Avoid very long results
-            if (result.length > 1000) {
-                return result + "... (truncated)";
-            }
-        }
-        
-        if (hasMore) {
-            result += ", ... (" + (arr.length - 100) + " more items)";
-        }
-        
-        return result + "]";
-    } catch (e) {
-        return "[Error formatting array: " + e.toString() + "]";
-    }
-}
-
-// Format object results (traverse properties)
-function formatObject(obj) {
-    try {
-        // Special case for Premiere Pro objects that might have a toString method
-        if (typeof obj.toString === "function") {
-            var stringRepresentation = obj.toString();
-            if (stringRepresentation !== "[object Object]") {
-                return stringRepresentation;
-            }
-        }
-        
-        var result = "{";
-        var props = [];
-        var propCount = 0;
-        
-        // Collect properties
-        for (var prop in obj) {
-            if (propCount >= 20) {
-                props.push("... (more properties)");
-                break;
+            // For arrays
+            if (result instanceof Array) {
+                var arrayStr = "[";
+                for (var i = 0; i < Math.min(result.length, 50); i++) {
+                    if (i > 0) arrayStr += ", ";
+                    arrayStr += formatOutput(result[i]);
+                }
+                if (result.length > 50) arrayStr += ", ...";
+                return arrayStr + "]";
             }
             
-            try {
-                var value = obj[prop];
-                var valueStr;
-                
-                // Handle circular references and deeply nested structures
-                try {
-                    // For Premiere Pro objects, often just showing the property name is enough
-                    if (typeof value === "object" && value !== null) {
-                        valueStr = "[Object]";
-                    } else {
-                        valueStr = formatResult(value);
-                    }
-                } catch (e) {
-                    valueStr = "[Object]";
+            // For objects
+            var objStr = "{";
+            var props = [];
+            var count = 0;
+            
+            for (var prop in result) {
+                if (count >= 15) {
+                    props.push("...");
+                    break;
                 }
                 
-                props.push(prop + ": " + valueStr);
-                propCount++;
-            } catch (e) {
-                props.push(prop + ": [Error accessing property]");
-                propCount++;
+                try {
+                    props.push(prop + ": " + formatOutput(result[prop]));
+                } catch (e) {
+                    props.push(prop + ": [Object]");
+                }
+                
+                count++;
             }
+            
+            return objStr + props.join(", ") + "}";
+        } catch (e) {
+            return "[Object]";
         }
-        
-        result += props.join(", ");
-        return result + "}";
-    } catch (e) {
-        return "[Error formatting object: " + e.toString() + "]";
+    } else {
+        return result.toString();
     }
 }

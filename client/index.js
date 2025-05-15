@@ -1,58 +1,49 @@
 // Initialize the CSInterface
-const csInterface = new CSInterface();
+var csInterface = new CSInterface();
 
 // Get DOM elements
-const codeInput = document.getElementById('code-input');
-const consoleOutput = document.getElementById('console-output');
-const executeButton = document.getElementById('execute-button');
-const clearConsoleButton = document.getElementById('clear-console');
-const quickCommandButtons = document.querySelectorAll('.command-buttons button');
+var codeInput = document.getElementById('code-input');
+var consoleOutput = document.getElementById('console-output');
+var executeButton = document.getElementById('execute-button');
+var clearButton = document.getElementById('clear-button');
 
 // Execute code function
 function executeCode() {
-    const code = codeInput.value.trim();
-    
+    var code = codeInput.value.trim();
     if (!code) return;
     
     // Add command to console output
-    const commandEntry = document.createElement('div');
-    commandEntry.className = 'output-entry';
+    var commandDiv = document.createElement('div');
+    commandDiv.className = 'command';
+    commandDiv.textContent = '> ' + code;
+    consoleOutput.appendChild(commandDiv);
     
-    const commandLine = document.createElement('div');
-    commandLine.className = 'command';
-    commandLine.textContent = '> ' + code;
-    commandEntry.appendChild(commandLine);
+    // Add result placeholder
+    var resultDiv = document.createElement('div');
+    resultDiv.className = 'result';
+    resultDiv.textContent = 'Executing...';
+    consoleOutput.appendChild(resultDiv);
     
-    // Create a placeholder for the result
-    const resultLine = document.createElement('div');
-    resultLine.className = 'result';
-    resultLine.textContent = 'Executing...';
-    commandEntry.appendChild(resultLine);
+    // Scroll to bottom
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
     
-    consoleOutput.appendChild(commandEntry);
-    consoleOutput.scrollTop = consoleOutput.scrollHeight; // Scroll to bottom
-    
-    // Execute the code in ExtendScript
-    csInterface.evalScript(`executeConsoleCode("${escapeCode(code)}")`, function(result) {
+    // Execute code in ExtendScript
+    var encodedCode = encodeURIComponent(code);
+    csInterface.evalScript('executeCode(decodeURIComponent("' + encodedCode + '"))', function(result) {
         if (result.startsWith('ERROR:')) {
-            resultLine.className = 'error';
-            resultLine.textContent = result.substring(6); // Remove the 'ERROR:' prefix
+            resultDiv.className = 'error';
+            resultDiv.textContent = result.substring(6); // Remove ERROR: prefix
         } else {
-            resultLine.textContent = result;
+            resultDiv.textContent = result;
         }
-        consoleOutput.scrollTop = consoleOutput.scrollHeight; // Scroll to bottom again after result
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
     });
-}
-
-// Escape code for safe passing to ExtendScript
-function escapeCode(code) {
-    return code.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
 }
 
 // Event listeners
 executeButton.addEventListener('click', executeCode);
 
-clearConsoleButton.addEventListener('click', function() {
+clearButton.addEventListener('click', function() {
     consoleOutput.innerHTML = '';
 });
 
@@ -62,31 +53,4 @@ codeInput.addEventListener('keydown', function(e) {
         executeCode();
         e.preventDefault();
     }
-});
-
-// Quick commands
-quickCommandButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        const command = this.getAttribute('data-command');
-        codeInput.value = command;
-        executeCode();
-    });
-});
-
-// Add a welcome message when the extension loads
-window.addEventListener('load', function() {
-    const welcomeEntry = document.createElement('div');
-    welcomeEntry.className = 'output-entry';
-    
-    const welcomeLine = document.createElement('div');
-    welcomeLine.className = 'command';
-    welcomeLine.textContent = '> Welcome to Premiere Pro Console';
-    welcomeEntry.appendChild(welcomeLine);
-    
-    const infoLine = document.createElement('div');
-    infoLine.className = 'result';
-    infoLine.innerHTML = 'Type ExtendScript code and press Execute (or Ctrl+Enter)<br>Try a quick command below to get started.';
-    welcomeEntry.appendChild(infoLine);
-    
-    consoleOutput.appendChild(welcomeEntry);
 });

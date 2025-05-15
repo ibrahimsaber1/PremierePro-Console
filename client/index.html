@@ -6,46 +6,20 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <div class="header">
-            <h1>Premiere Pro Console</h1>
-            <div class="button-group">
-                <button id="clear-console">Clear Console</button>
-                <button id="execute-button">Execute</button>
-            </div>
+    <div id="console-app">
+        <h1>Premiere Pro Console</h1>
+        
+        <!-- Code Input -->
+        <div class="input-area">
+            <textarea id="code-input" placeholder="Enter ExtendScript code here..."></textarea>
+            <button id="execute-button">Execute</button>
+            <button id="clear-button">Clear Console</button>
         </div>
         
-        <!-- Input Area -->
-        <div class="input-container">
-            <div class="input-header">
-                <span>Code Input</span>
-            </div>
-            <textarea id="code-input" placeholder="Enter ExtendScript code here (e.g., app.project.activeSequence)"></textarea>
-        </div>
-        
-        <!-- Output Area -->
-        <div class="output-container">
-            <div class="output-header">
-                <span>Console Output</span>
-            </div>
-            <div id="console-output"></div>
-        </div>
-        
-        <!-- Quick Commands -->
-        <div class="quick-commands">
-            <div class="commands-header">
-                <span>Quick Commands</span>
-            </div>
-            <div class="command-buttons">
-                <button data-command="app.project.activeSequence">Active Sequence</button>
-                <button data-command="app.project.activeSequence.getVideoTracks()">Video Tracks</button>
-                <button data-command="app.project.rootItem.children.numItems">Project Items Count</button>
-                <button data-command="app.project.activeSequence.markers.numMarkers">Markers Count</button>
-            </div>
-        </div>
+        <!-- Console Output -->
+        <div id="console-output"></div>
     </div>
 
-    <!-- Scripts -->
     <script type="text/javascript" src="CSInterface.js"></script>
     <script type="text/javascript" src="index.js"></script>
 </body>
