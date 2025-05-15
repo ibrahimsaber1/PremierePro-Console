@@ -5,6 +5,7 @@
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
+      <!-- PPRO is the ID for Premiere Pro -->
       <Host Name="PPRO" Version="[12.0,99.9]" />
     </HostList>
     <LocaleList>
