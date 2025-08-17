@@ -8,6 +8,46 @@ const executeButton = document.getElementById('execute-button');
 const clearConsoleButton = document.getElementById('clear-console');
 const quickCommandButtons = document.querySelectorAll('.command-buttons button');
 
+// Enhanced code editing functionality
+function setupCodeEditor() {
+    // Tab support
+    codeInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            
+            if (e.shiftKey) {
+                // Shift+Tab: Remove indentation
+                const lines = this.value.split('\n');
+                let currentLine = 0;
+                let currentPos = 0;
+                
+                for (let i = 0; i < lines.length; i++) {
+                    if (start >= currentPos && start <= currentPos + lines[i].length) {
+                        currentLine = i;
+                        break;
+                    }
+                    currentPos += lines[i].length + 1; // +1 for newline
+                }
+                
+                if (lines[currentLine].startsWith('    ')) {
+                    lines[currentLine] = lines[currentLine].substring(4);
+                    this.value = lines.join('\n');
+                    this.selectionStart = start - 4;
+                    this.selectionEnd = end - 4;
+                }
+            } else {
+                // Tab: Add indentation
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        }
+        
+    });
+}
+
 // Execute code function
 function executeCode() {
     const code = codeInput.value.trim();
@@ -57,7 +97,7 @@ clearConsoleButton.addEventListener('click', function() {
 
 // Allow executing code with Ctrl+Enter or Cmd+Enter
 codeInput.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if ((e.shiftKey || e.metaKey) && e.key === 'Enter') {
         executeCode();
         e.preventDefault();
     }
@@ -74,6 +114,9 @@ quickCommandButtons.forEach(button => {
 
 // Add a welcome message when the extension loads
 window.addEventListener('load', function() {
+    // Setup enhanced code editor
+    setupCodeEditor();
+    
     const welcomeEntry = document.createElement('div');
     welcomeEntry.className = 'output-entry';
     
