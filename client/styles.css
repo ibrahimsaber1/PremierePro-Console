@@ -11,7 +11,7 @@ body {
 #app {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: calc(100% - 30px); /* Reserve space for status bar */
 }
 
 .header {
@@ -41,24 +41,54 @@ body {
     padding: 5px 10px;
     font-size: 14px;
     font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.input-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.input-controls button {
+    background: transparent;
+    border: 1px solid #666;
+    color: #E0E0E0;
+    padding: 2px 6px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.input-controls button:hover {
+    background-color: #5D5D5D;
 }
 
 .input-container {
-    flex: 0 0 30%;
+    flex: 0 0 35%;
 }
 
 #code-input {
     width: 100%;
     height: 100%;
-    min-height: 100px;
+    min-height: 120px;
     box-sizing: border-box;
     padding: 10px;
     background-color: #1E1E1E;
     color: #E0E0E0;
     border: none;
-    resize: vertical;
-    font-family: monospace;
+    resize: none;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.4;
     outline: none;
+    tab-size: 4;
+}
+
+#code-input::placeholder {
+    color: #777;
+    font-style: italic;
 }
 
 .output-container {
@@ -72,8 +102,10 @@ body {
     background-color: #1E1E1E;
     padding: 10px;
     overflow-y: auto;
-    font-family: monospace;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
     flex: 1;
+    line-height: 1.3;
 }
 
 .output-entry {
@@ -84,16 +116,19 @@ body {
 .command {
     color: #56B6C2;
     margin-bottom: 2px;
+    font-weight: bold;
 }
 
 .result {
     color: #98C379;
     padding-left: 15px;
+    white-space: pre-wrap;
 }
 
 .error {
     color: #E06C75;
     padding-left: 15px;
+    font-weight: bold;
 }
 
 .quick-commands {
@@ -104,7 +139,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     padding: 10px;
-    gap: 10px;
+    gap: 8px;
 }
 
 button {
@@ -112,9 +147,10 @@ button {
     color: #E0E0E0;
     border: 1px solid #666;
     border-radius: 3px;
-    padding: 5px 10px;
+    padding: 6px 12px;
     cursor: pointer;
     font-size: 12px;
+    transition: background-color 0.2s;
 }
 
 button:hover {
@@ -123,4 +159,251 @@ button:hover {
 
 button:active {
     background-color: #3D3D3D;
+}
+
+button:disabled {
+    background-color: #333;
+    color: #666;
+    cursor: not-allowed;
+}
+
+/* Status Bar */
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 25px;
+    background-color: #3D3D3D;
+    border-top: 1px solid #555;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 11px;
+    color: #BBB;
+    gap: 10px;
+}
+
+.status-separator {
+    color: #666;
+}
+
+#autocomplete-status {
+    font-weight: bold;
+    color: #98C379;
+}
+
+/* Autocomplete Dropdown Styles */
+.autocomplete-dropdown {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    color: #E0E0E0;
+    background: #2D2D2D;
+    border: 1px solid #555;
+    border-radius: 4px;
+    max-height: 250px;
+    overflow-y: auto;
+    min-width: 250px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    z-index: 10000;
+}
+
+.autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #444;
+    transition: background-color 0.1s;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+    background-color: #404040;
+}
+
+.autocomplete-item-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.autocomplete-icon {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+}
+
+.autocomplete-name {
+    flex: 1;
+    font-weight: bold;
+    color: #E0E0E0;
+}
+
+.autocomplete-type {
+    font-size: 10px;
+    opacity: 0.8;
+    font-weight: normal;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.autocomplete-description {
+    font-size: 10px;
+    color: #AAA;
+    margin-top: 3px;
+    padding-left: 28px;
+    line-height: 1.3;
+    font-style: italic;
+}
+
+/* Scrollbar Styling */
+.autocomplete-dropdown::-webkit-scrollbar,
+#console-output::-webkit-scrollbar {
+    width: 8px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-track,
+#console-output::-webkit-scrollbar-track {
+    background: #1E1E1E;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb,
+#console-output::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb:hover,
+#console-output::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* Code Snippets Menu */
+.snippets-menu {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    color: #E0E0E0;
+}
+
+.snippets-menu .snippet-item {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-bottom: 2px;
+    font-size: 12px;
+    transition: background-color 0.1s;
+}
+
+.snippets-menu .snippet-item:hover {
+    background-color: #404040;
+}
+
+/* Responsive Design */
+@media (max-height: 600px) {
+    .input-container {
+        flex: 0 0 30%;
+    }
+    
+    #code-input {
+        min-height: 80px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 5px;
+    }
+    
+    .header h1 {
+        font-size: 16px;
+    }
+    
+    .button-group button,
+    button {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    .autocomplete-dropdown {
+        min-width: 200px;
+        font-size: 11px;
+    }
+    
+    .status-bar {
+        font-size: 10px;
+        padding: 0 5px;
+    }
+}
+
+/* Dark Mode Enhancements */
+::selection {
+    background-color: #264F78;
+    color: white;
+}
+
+/* Focus states */
+#code-input:focus {
+    border: 1px solid #56B6C2;
+    box-shadow: 0 0 5px rgba(86, 182, 194, 0.3);
+}
+
+button:focus {
+    outline: 1px solid #56B6C2;
+    outline-offset: 2px;
+}
+
+/* Animation for autocomplete dropdown */
+.autocomplete-dropdown {
+    animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Accessibility improvements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .autocomplete-dropdown {
+        border: 2px solid #FFF;
+    }
+    
+    .autocomplete-item.selected {
+        background-color: #FFF;
+        color: #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .autocomplete-dropdown {
+        animation: none;
+    }
+    
+    button,
+    .autocomplete-item {
+        transition: none;
+    }
 }

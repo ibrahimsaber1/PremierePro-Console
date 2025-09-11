@@ -19,8 +19,12 @@
         <div class="input-container">
             <div class="input-header">
                 <span>Code Input</span>
+                <div class="input-controls">
+                    <button id="snippets-button" title="Code Snippets (Ctrl+Shift+P)">📝</button>
+                    <button id="help-button" title="Show Help">❓</button>
+                </div>
             </div>
-            <textarea id="code-input" placeholder="Enter ExtendScript code here (e.g., app.project.activeSequence)"></textarea>
+            <textarea id="code-input" placeholder="Enter ExtendScript code here... Try typing 'app.' to see autocomplete suggestions!"></textarea>
         </div>
         
         <!-- Output Area -->
@@ -31,22 +35,39 @@
             <div id="console-output"></div>
         </div>
         
-        <!-- Quick Commands -->
-        <!-- <div class="quick-commands">
+        <!-- Quick Commands (Optional - can be uncommented if needed) -->
+        <!--
+        <div class="quick-commands">
             <div class="commands-header">
                 <span>Quick Commands</span>
             </div>
             <div class="command-buttons">
                 <button data-command="app.project.activeSequence">Active Sequence</button>
-                <button data-command="app.project.activeSequence.getVideoTracks()">Video Tracks</button>
+                <button data-command="app.project.activeSequence.videoTracks">Video Tracks</button>
                 <button data-command="app.project.rootItem.children.numItems">Project Items Count</button>
                 <button data-command="app.project.activeSequence.markers.numMarkers">Markers Count</button>
+                <button data-command="app.project.save()">Save Project</button>
+                <button data-command="app.encoder.launchEncoder()">Launch AME</button>
             </div>
-        </div> -->
+        </div>
+        -->
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span id="autocomplete-status">Autocomplete: Ready</span>
+        <span class="status-separator">|</span>
+        <span>Ctrl+Space: Manual Autocomplete</span>
+        <span class="status-separator">|</span>
+        <span>Ctrl+Shift+P: Snippets</span>
+        <span class="status-separator">|</span>
+        <span>Ctrl+Enter: Execute</span>
     </div>
 
     <!-- Scripts -->
     <script type="text/javascript" src="CSInterface.js"></script>
+    <script type="text/javascript" src="extendscript-api.js"></script>
+    <script type="text/javascript" src="autocomplete-core.js"></script>
     <script type="text/javascript" src="index.js"></script>
 </body>
 </html>
