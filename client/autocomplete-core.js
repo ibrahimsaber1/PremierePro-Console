@@ -1,4 +1,4 @@
-// client/autocomplete-core.js
+// client/autocomplete-core.js - Enhanced with comprehensive API data
 // Core autocomplete functionality for ExtendScript
 
 class ExtendScriptAutocomplete {
@@ -12,6 +12,43 @@ class ExtendScriptAutocomplete {
         this.cache = new Map();
         
         this.init();
+    }
+    
+    // Debug function to help troubleshoot autocomplete issues
+    debugAutocomplete(objectPath) {
+        console.log('Debug autocomplete for path:', objectPath);
+        let currentObject = this.apiData;
+        
+        for (let i = 0; i < objectPath.length; i++) {
+            const segment = objectPath[i];
+            console.log(`Segment ${i}: ${segment}`);
+            console.log('Current object:', currentObject);
+            
+            if (segment === 'app' && i === 0) {
+                currentObject = this.apiData.app;
+                console.log('Found app object:', currentObject);
+                continue;
+            }
+            
+            if (currentObject && currentObject.properties && currentObject.properties[segment]) {
+                const property = currentObject.properties[segment];
+                console.log('Found property:', property);
+                
+                if (property.type && this.apiData[property.type]) {
+                    currentObject = this.apiData[property.type];
+                    console.log('Following type reference to:', property.type, currentObject);
+                } else {
+                    console.log('No type reference found for:', property.type);
+                    return null;
+                }
+            } else {
+                console.log('Property not found:', segment);
+                return null;
+            }
+        }
+        
+        console.log('Final object:', currentObject);
+        return currentObject;
     }
     
     init() {
@@ -35,11 +72,13 @@ class ExtendScriptAutocomplete {
             background: #2D2D2D;
             border: 1px solid #555;
             border-radius: 4px;
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
-            min-width: 200px;
+            min-width: 300px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             display: none;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
         `;
         document.body.appendChild(this.dropdown);
     }
@@ -70,7 +109,7 @@ class ExtendScriptAutocomplete {
         clearTimeout(this.debounceTimer);
         this.debounceTimer = setTimeout(() => {
             this.processInput();
-        }, 150);
+        }, 100);
     }
     
     processInput() {
@@ -93,9 +132,9 @@ class ExtendScriptAutocomplete {
     analyzeContext() {
         const cursorPos = this.textarea.selectionStart;
         const text = this.textarea.value;
-        const beforeCursor = text.substring(Math.max(0, cursorPos - 200), cursorPos);
+        const beforeCursor = text.substring(Math.max(0, cursorPos - 300), cursorPos);
         
-        // Match object property access like "app.project.activeSequence.mar"
+        // Match object property access like "app.project.activeSequence.markers.getFirstMarker"
         const objectChainRegex = /([a-zA-Z$_][a-zA-Z0-9$_]*(?:\.[a-zA-Z$_][a-zA-Z0-9$_]*)*)\.([a-zA-Z$_][a-zA-Z0-9$_]*)$/;
         const objectMatch = beforeCursor.match(objectChainRegex);
         
@@ -112,7 +151,7 @@ class ExtendScriptAutocomplete {
             };
         }
         
-        // Match method calls for parameter hints
+        // Match method calls for parameter hints (e.g., "setInPoint(" or "createMarker(")
         const methodCallRegex = /([a-zA-Z$_][a-zA-Z0-9$_]*)\s*\(\s*([^)]*)$/;
         const methodMatch = beforeCursor.match(methodCallRegex);
         
@@ -120,7 +159,25 @@ class ExtendScriptAutocomplete {
             return {
                 type: 'method_call',
                 methodName: methodMatch[1],
-                parameters: methodMatch[2]
+                parameters: methodMatch[2],
+                replaceLength: 0
+            };
+        }
+        
+        // Match array access like "app.project.sequences[0]."
+        const arrayAccessRegex = /([a-zA-Z$_][a-zA-Z0-9$_]*(?:\.[a-zA-Z$_][a-zA-Z0-9$_]*)*)\[([^\]]*)\]\.([a-zA-Z$_][a-zA-Z0-9$_]*)$/;
+        const arrayMatch = beforeCursor.match(arrayAccessRegex);
+        
+        if (arrayMatch) {
+            const objectPath = arrayMatch[1];
+            const partialProperty = arrayMatch[3];
+            const pathParts = objectPath.split('.');
+            
+            return {
+                type: 'array_access',
+                objectPath: pathParts,
+                partialProperty: partialProperty,
+                replaceLength: partialProperty.length
             };
         }
         
@@ -149,13 +206,14 @@ class ExtendScriptAutocomplete {
         
         switch (context.type) {
             case 'property_access':
+            case 'array_access':
                 suggestions = this.getObjectSuggestions(context.objectPath, context.partialProperty);
                 break;
             case 'identifier':
                 suggestions = this.getGlobalSuggestions(context.word);
                 break;
             case 'method_call':
-                suggestions = this.getMethodSuggestions(context.methodName);
+                suggestions = this.getMethodParameterHints(context.methodName, context.parameters);
                 break;
         }
         
@@ -172,7 +230,7 @@ class ExtendScriptAutocomplete {
         for (let i = 0; i < objectPath.length; i++) {
             const segment = objectPath[i];
             
-            if (currentObject.properties && currentObject.properties[segment]) {
+            if (currentObject && currentObject.properties && currentObject.properties[segment]) {
                 const property = currentObject.properties[segment];
                 if (property.type && this.apiData[property.type]) {
                     currentObject = this.apiData[property.type];
@@ -180,12 +238,22 @@ class ExtendScriptAutocomplete {
                     // Look for the type in the API structure
                     currentObject = this.findObjectByType(property.type) || currentObject;
                 }
-            } else if (currentObject[segment]) {
+            } else if (currentObject && currentObject[segment]) {
                 currentObject = currentObject[segment];
             } else {
+                // Handle collection types (like sequences[0] -> Sequence)
+                if (segment.includes('Collection') || segment.includes('Tracks') || segment.includes('Items')) {
+                    const elementType = this.getCollectionElementType(segment);
+                    if (elementType && this.apiData[elementType]) {
+                        currentObject = this.apiData[elementType];
+                        continue;
+                    }
+                }
                 return [];
             }
         }
+        
+        if (!currentObject) return [];
         
         const suggestions = [];
         
@@ -200,7 +268,8 @@ class ExtendScriptAutocomplete {
                         returnType: prop.type || 'Unknown',
                         description: prop.description || '',
                         readonly: prop.readonly || false,
-                        insertText: key
+                        insertText: key,
+                        detail: this.formatPropertyDetail(prop)
                     });
                 }
             });
@@ -218,7 +287,8 @@ class ExtendScriptAutocomplete {
                         description: method.description || '',
                         signature: method.signature || `${key}()`,
                         parameters: method.parameters || [],
-                        insertText: method.parameters && method.parameters.length > 0 ? `${key}()` : `${key}()`
+                        insertText: this.formatMethodInsert(key, method.parameters),
+                        detail: this.formatMethodDetail(method)
                     });
                 }
             });
@@ -238,7 +308,8 @@ class ExtendScriptAutocomplete {
                     name: key,
                     type: 'object',
                     description: obj.description || `${key} object`,
-                    insertText: key
+                    insertText: key,
+                    detail: obj.description || ''
                 });
             }
         });
@@ -250,7 +321,35 @@ class ExtendScriptAutocomplete {
                     name: constantGroup,
                     type: 'constant',
                     description: `${constantGroup} constants`,
-                    insertText: constantGroup
+                    insertText: constantGroup,
+                    detail: `Constants: ${Object.keys(this.constants[constantGroup]).join(', ')}`
+                });
+            }
+            
+            // Add individual constant values
+            Object.keys(this.constants[constantGroup]).forEach(constantName => {
+                if (constantName.toLowerCase().startsWith(partial.toLowerCase())) {
+                    suggestions.push({
+                        name: constantName,
+                        type: 'constant',
+                        description: `${constantGroup}.${constantName}`,
+                        insertText: `${constantGroup}.${constantName}`,
+                        detail: `Value: ${this.constants[constantGroup][constantName]}`
+                    });
+                }
+            });
+        });
+        
+        // Add common JavaScript keywords and functions
+        const jsKeywords = ['var', 'function', 'if', 'else', 'for', 'while', 'try', 'catch', 'return', 'new', 'this'];
+        jsKeywords.forEach(keyword => {
+            if (keyword.toLowerCase().startsWith(partial.toLowerCase())) {
+                suggestions.push({
+                    name: keyword,
+                    type: 'keyword',
+                    description: `JavaScript keyword: ${keyword}`,
+                    insertText: keyword,
+                    detail: 'JavaScript keyword'
                 });
             }
         });
@@ -258,18 +357,113 @@ class ExtendScriptAutocomplete {
         return this.sortSuggestions(suggestions, partial);
     }
     
-    getMethodSuggestions(methodName) {
-        // This could be expanded to show parameter hints
-        return [];
+    getMethodParameterHints(methodName, currentParams) {
+        // Find method definition in API
+        const methodInfo = this.findMethodInAPI(methodName);
+        if (!methodInfo || !methodInfo.parameters) {
+            return [];
+        }
+        
+        const paramCount = currentParams.split(',').length;
+        const currentParam = methodInfo.parameters[paramCount - 1];
+        
+        if (!currentParam) return [];
+        
+        return [{
+            name: `Parameter: ${currentParam.name}`,
+            type: 'hint',
+            description: currentParam.description || '',
+            detail: `Type: ${currentParam.type}`,
+            insertText: '',
+            isParameterHint: true
+        }];
+    }
+    
+    findMethodInAPI(methodName) {
+        // Recursively search for method in API structure
+        const search = (obj) => {
+            if (obj.methods && obj.methods[methodName]) {
+                return obj.methods[methodName];
+            }
+            if (obj.properties) {
+                for (const prop of Object.values(obj.properties)) {
+                    if (prop.type && this.apiData[prop.type]) {
+                        const result = search(this.apiData[prop.type]);
+                        if (result) return result;
+                    }
+                }
+            }
+            return null;
+        };
+        
+        return search(this.apiData);
+    }
+    
+    getCollectionElementType(collectionName) {
+        const typeMap = {
+            'sequences': 'Sequence',
+            'videoTracks': 'Track',
+            'audioTracks': 'Track',
+            'clips': 'TrackItem',
+            'children': 'ProjectItem',
+            'markers': 'Marker',
+            'projects': 'Project',
+            'components': 'Component',
+            'properties': 'ComponentParam'
+        };
+        
+        for (const [key, type] of Object.entries(typeMap)) {
+            if (collectionName.toLowerCase().includes(key.toLowerCase())) {
+                return type;
+            }
+        }
+        
+        return null;
+    }
+    
+    formatPropertyDetail(prop) {
+        let detail = '';
+        if (prop.type) detail += `Type: ${prop.type}`;
+        if (prop.readonly) detail += ' (read-only)';
+        return detail;
+    }
+    
+    formatMethodDetail(method) {
+        let detail = '';
+        if (method.returnType) detail += `Returns: ${method.returnType}`;
+        if (method.parameters && method.parameters.length > 0) {
+            detail += `\nParameters: ${method.parameters.length}`;
+        }
+        return detail;
+    }
+    
+    formatMethodInsert(methodName, parameters) {
+        if (!parameters || parameters.length === 0) {
+            return `${methodName}()`;
+        }
+        
+        // Create parameter placeholders
+        const paramPlaceholders = parameters.map((param, index) => {
+            return `${param.name}`;
+        }).join(', ');
+        
+        return `${methodName}(${paramPlaceholders})`;
     }
     
     findObjectByType(typeName) {
-        // Simple type lookup - could be more sophisticated
+        // Simple type lookup
+        if (this.apiData[typeName]) {
+            return this.apiData[typeName];
+        }
+        
+        // Search through the API for matching types
         for (const key in this.apiData) {
-            if (key === typeName || (this.apiData[key].type === typeName)) {
-                return this.apiData[key];
+            const obj = this.apiData[key];
+            if (obj.type === typeName) {
+                return obj;
             }
         }
+        
         return null;
     }
     
@@ -278,6 +472,10 @@ class ExtendScriptAutocomplete {
             // Exact matches first
             if (a.name === partial) return -1;
             if (b.name === partial) return 1;
+            
+            // Methods before properties
+            if (a.type === 'method' && b.type === 'property') return -1;
+            if (a.type === 'property' && b.type === 'method') return 1;
             
             // Prefix matches next
             const aStartsWith = a.name.toLowerCase().startsWith(partial.toLowerCase());
@@ -292,7 +490,7 @@ class ExtendScriptAutocomplete {
     }
     
     showSuggestions(suggestions) {
-        this.currentSuggestions = suggestions.slice(0, 10); // Limit to 10 items
+        this.currentSuggestions = suggestions.slice(0, 12); // Limit to 12 items
         this.selectedIndex = 0;
         this.updateDropdownContent();
         this.positionDropdown();
@@ -309,17 +507,36 @@ class ExtendScriptAutocomplete {
             const icon = this.getIcon(suggestion.type);
             const typeColor = this.getTypeColor(suggestion.type);
             
-            item.innerHTML = `
-                <div class="autocomplete-item-content">
-                    <span class="autocomplete-icon">${icon}</span>
-                    <span class="autocomplete-name">${suggestion.name}</span>
-                    <span class="autocomplete-type" style="color: ${typeColor}">${suggestion.returnType || suggestion.type}</span>
-                </div>
-                ${suggestion.description ? `<div class="autocomplete-description">${suggestion.description}</div>` : ''}
-            `;
+            // Special handling for parameter hints
+            if (suggestion.isParameterHint) {
+                item.innerHTML = `
+                    <div class="autocomplete-parameter-hint">
+                        <div class="parameter-name">${suggestion.name}</div>
+                        <div class="parameter-detail">${suggestion.detail}</div>
+                        <div class="parameter-description">${suggestion.description}</div>
+                    </div>
+                `;
+            } else {
+                item.innerHTML = `
+                    <div class="autocomplete-item-content">
+                        <span class="autocomplete-icon" style="color: ${typeColor}">${icon}</span>
+                        <div class="autocomplete-main">
+                            <div class="autocomplete-header">
+                                <span class="autocomplete-name">${suggestion.name}</span>
+                                <span class="autocomplete-type" style="color: ${typeColor}">${suggestion.returnType || suggestion.type}</span>
+                            </div>
+                            ${suggestion.signature ? `<div class="autocomplete-signature">${suggestion.signature}</div>` : ''}
+                            ${suggestion.description ? `<div class="autocomplete-description">${suggestion.description}</div>` : ''}
+                            ${suggestion.detail ? `<div class="autocomplete-detail">${suggestion.detail}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
             
             item.addEventListener('click', () => {
-                this.acceptSuggestion(suggestion);
+                if (!suggestion.isParameterHint) {
+                    this.acceptSuggestion(suggestion);
+                }
             });
             
             this.dropdown.appendChild(item);
@@ -331,7 +548,9 @@ class ExtendScriptAutocomplete {
             property: '🔧',
             method: '⚡',
             object: '📦',
-            constant: '🔢'
+            constant: '🔢',
+            keyword: '🔤',
+            hint: '💡'
         };
         return icons[type] || '•';
     }
@@ -341,7 +560,9 @@ class ExtendScriptAutocomplete {
             property: '#98C379',
             method: '#61DAFB',
             object: '#E06C75',
-            constant: '#D19A66'
+            constant: '#D19A66',
+            keyword: '#C678DD',
+            hint: '#F7DC6F'
         };
         return colors[type] || '#ABB2BF';
     }
@@ -403,16 +624,36 @@ class ExtendScriptAutocomplete {
     showDropdown() {
         this.dropdown.style.display = 'block';
         this.isVisible = true;
+        
+        // Update status
+        const statusElement = document.getElementById('autocomplete-status');
+        if (statusElement) {
+            statusElement.textContent = `Autocomplete: ${this.currentSuggestions.length} suggestions`;
+        }
     }
     
     hideDropdown() {
         this.dropdown.style.display = 'none';
         this.isVisible = false;
         this.selectedIndex = 0;
+        
+        // Update status
+        const statusElement = document.getElementById('autocomplete-status');
+        if (statusElement) {
+            statusElement.textContent = 'Autocomplete: Ready';
+        }
     }
     
     handleKeyDown(e) {
-        if (!this.isVisible) return;
+        if (!this.isVisible) {
+            // Manual trigger with Ctrl+Space
+            if (e.ctrlKey && e.code === 'Space') {
+                e.preventDefault();
+                this.processInput();
+                return;
+            }
+            return;
+        }
         
         switch (e.key) {
             case 'ArrowDown':
@@ -429,13 +670,14 @@ class ExtendScriptAutocomplete {
                 
             case 'Enter':
             case 'Tab':
-                if (this.currentSuggestions[this.selectedIndex]) {
+                if (this.currentSuggestions[this.selectedIndex] && !this.currentSuggestions[this.selectedIndex].isParameterHint) {
                     e.preventDefault();
                     this.acceptSuggestion(this.currentSuggestions[this.selectedIndex]);
                 }
                 break;
                 
             case 'Escape':
+                e.preventDefault();
                 this.hideDropdown();
                 break;
         }
@@ -446,6 +688,12 @@ class ExtendScriptAutocomplete {
         items.forEach((item, index) => {
             item.classList.toggle('selected', index === this.selectedIndex);
         });
+        
+        // Scroll selected item into view
+        const selectedItem = items[this.selectedIndex];
+        if (selectedItem) {
+            selectedItem.scrollIntoView({ block: 'nearest' });
+        }
     }
     
     acceptSuggestion(suggestion) {
@@ -455,78 +703,22 @@ class ExtendScriptAutocomplete {
         const start = this.textarea.selectionStart - replaceLength;
         const end = this.textarea.selectionEnd;
         
-        this.textarea.setRangeText(suggestion.insertText, start, end, 'end');
+        let insertText = suggestion.insertText;
+        
+        // For methods, position cursor inside parentheses if there are parameters
+        if (suggestion.type === 'method' && suggestion.parameters && suggestion.parameters.length > 0) {
+            insertText = `${suggestion.name}(`;
+            this.textarea.setRangeText(insertText, start, end, 'end');
+            
+            // Position cursor inside parentheses
+            const newPos = start + insertText.length;
+            this.textarea.setSelectionRange(newPos, newPos);
+        } else {
+            this.textarea.setRangeText(insertText, start, end, 'end');
+        }
+        
         this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
         this.textarea.focus();
         this.hideDropdown();
     }
-}
-
-// CSS styles for autocomplete dropdown
-const autocompleteStyles = `
-.autocomplete-dropdown {
-    font-family: monospace;
-    font-size: 12px;
-    color: #E0E0E0;
-}
-
-.autocomplete-item {
-    padding: 6px 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #444;
-}
-
-.autocomplete-item:hover,
-.autocomplete-item.selected {
-    background-color: #404040;
-}
-
-.autocomplete-item-content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.autocomplete-icon {
-    font-size: 14px;
-    width: 16px;
-}
-
-.autocomplete-name {
-    flex: 1;
-    font-weight: bold;
-}
-
-.autocomplete-type {
-    font-size: 10px;
-    opacity: 0.7;
-}
-
-.autocomplete-description {
-    font-size: 10px;
-    color: #999;
-    margin-top: 2px;
-    padding-left: 24px;
-    line-height: 1.2;
-}
-
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-`;
-
-// Add styles to document
-if (!document.getElementById('autocomplete-styles')) {
-    const style = document.createElement('style');
-    style.id = 'autocomplete-styles';
-    style.textContent = autocompleteStyles;
-    document.head.appendChild(style);
 }
