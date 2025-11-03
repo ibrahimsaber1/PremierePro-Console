@@ -21,7 +21,10 @@
         <Resources>
           <MainPath>./client/index.html</MainPath>
           <ScriptPath>./host/index.jsx</ScriptPath>
-          <CEFCommandLine />
+          <CEFCommandLine>
+            <Parameter>--remote-debug=8000</Parameter>
+
+          </CEFCommandLine>
         </Resources>
         <Lifecycle>
           <AutoVisible>true</AutoVisible>
