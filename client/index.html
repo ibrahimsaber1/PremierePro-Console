@@ -7,61 +7,51 @@
 </head>
 <body>
     <div id="app">
+        <!-- Header -->
         <div class="header">
-            <h1>Premiere Pro Console</h1>
+            <h1>⚡ Premiere Pro Console</h1>
             <div class="button-group">
-                <button id="clear-console">Clear Console</button>
-                <button id="execute-button">Execute</button>
+                <button id="snippets-button" title="Code Snippets (Ctrl+Shift+P)">📝 Snippets</button>
+                <button id="help-button" title="Show Help (F1)">❓ Help</button>
+                <button id="clear-console" title="Clear Console">🗑️ Clear</button>
+                <button id="execute-button" class="primary" title="Execute Code (Ctrl+Enter)">▶️ Run</button>
             </div>
         </div>
         
-        <!-- Input Area -->
-        <div class="input-container">
-            <div class="input-header">
-                <span>Code Input</span>
-                <div class="input-controls">
-                    <button id="snippets-button" title="Code Snippets (Ctrl+Shift+P)">📝</button>
-                    <button id="help-button" title="Show Help">❓</button>
+        <!-- Code Editor -->
+        <div class="editor-section">
+            <div class="section-header">
+                <span>📝 Code Editor</span>
+                <div class="editor-tools">
+                    <button id="format-code" title="Format Code">🎨</button>
+                    <button id="save-code" title="Save Code (Ctrl+S)">💾</button>
+                    <button id="load-code" title="Load Saved Code (Ctrl+O)">📂</button>
                 </div>
             </div>
-            <textarea id="code-input" placeholder="Enter ExtendScript code here... Try typing 'app.' to see autocomplete suggestions!"></textarea>
+            <textarea id="code-input" placeholder="// Type your ExtendScript code here
+// Try: app.project.name
+// or: app.project.activeSequence.videoTracks.numTracks"></textarea>
         </div>
         
-        <!-- Output Area -->
-        <div class="output-container">
-            <div class="output-header">
-                <span>Console Output</span>
+        <!-- Console Output -->
+        <div class="console-section">
+            <div class="section-header">
+                <span>📺 Console Output</span>
+                <input type="text" id="console-search" placeholder="🔍 Search output..." />
             </div>
             <div id="console-output"></div>
         </div>
-        
-        <!-- Quick Commands (Optional - can be uncommented if needed) -->
-        <!--
-        <div class="quick-commands">
-            <div class="commands-header">
-                <span>Quick Commands</span>
-            </div>
-            <div class="command-buttons">
-                <button data-command="app.project.activeSequence">Active Sequence</button>
-                <button data-command="app.project.activeSequence.videoTracks">Video Tracks</button>
-                <button data-command="app.project.rootItem.children.numItems">Project Items Count</button>
-                <button data-command="app.project.activeSequence.markers.numMarkers">Markers Count</button>
-                <button data-command="app.project.save()">Save Project</button>
-                <button data-command="app.encoder.launchEncoder()">Launch AME</button>
-            </div>
-        </div>
-        -->
     </div>
 
     <!-- Status Bar -->
     <div class="status-bar">
-        <span id="autocomplete-status">Autocomplete: Ready</span>
+        <span id="status-message">Ready</span>
         <span class="status-separator">|</span>
-        <span>Ctrl+Space: Manual Autocomplete</span>
+        <span>Ctrl+Enter: Run</span>
+        <span class="status-separator">|</span>
+        <span>Ctrl+Space: Autocomplete</span>
         <span class="status-separator">|</span>
         <span>Ctrl+Shift+P: Snippets</span>
-        <span class="status-separator">|</span>
-        <span>Ctrl+Enter: Execute</span>
     </div>
 
     <!-- Scripts -->
