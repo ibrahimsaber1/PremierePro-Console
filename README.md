@@ -6,7 +6,7 @@
 
 A powerful JavaScript console extension for Adobe Premiere Pro that allows you to execute ExtendScript commands directly within Premiere Pro with advanced features including intelligent autocomplete, code snippets, comprehensive API documentation, and multilingual support.
 
-![Premiere Pro Console Screenshot](https://github.com/ibrahimsaber1/PremierePro-Console/blob/main/img/console.png)
+![Premiere Pro Console Screenshot](https://github.com/ibrahimsaber1/PremierePro-Console/blob/main/img/console2.png)
 
 ## ✨ Features
 
