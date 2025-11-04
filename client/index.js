@@ -111,6 +111,15 @@
 
         // Keyboard shortcuts
         elements.codeInput.addEventListener('keydown', handleKeyboardShortcuts);
+
+        // Show docs (ADD THIS)
+        elements.docsButton = document.getElementById('docs-button');
+        if (elements.docsButton) {
+            elements.docsButton.addEventListener('click', () => {
+                const apiDocs = new APIDocs();
+                apiDocs.show();
+            });
+        }
     }
 
     // Handle Keyboard Shortcuts
@@ -152,6 +161,13 @@
             e.preventDefault();
             showHelpPanel();
         }
+
+        else if (e.key === 'F2') {
+            e.preventDefault();
+            const apiDocs = new APIDocs();
+            apiDocs.show();
+        }
+
     }
 
     // Execute Code in ExtendScript

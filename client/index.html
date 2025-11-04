@@ -11,6 +11,7 @@
         <div class="header">
             <h1>⚡ Premiere Pro Console</h1>
             <div class="button-group">
+                <button id="docs-button" title="API Documentation (F2)">📚 Docs</button>
                 <button id="snippets-button" title="Code Snippets (Ctrl+Shift+P)">📝 Snippets</button>
                 <button id="help-button" title="Show Help (F1)">❓ Help</button>
                 <button id="clear-console" title="Clear Console">🗑️ Clear</button>
@@ -51,12 +52,14 @@
         <span class="status-separator">|</span>
         <span>Ctrl+Space: Autocomplete</span>
         <span class="status-separator">|</span>
-        <span>Ctrl+Shift+P: Snippets</span>
+        <span>F2: Docs</span>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts - ORDER MATTERS! -->
     <script type="text/javascript" src="CSInterface.js"></script>
     <script type="text/javascript" src="extendscript-api.js"></script>
+    <script type="text/javascript" src="snippets.js"></script>
+    <script type="text/javascript" src="docs-panel.js"></script>
     <script type="text/javascript" src="autocomplete-core.js"></script>
     <script type="text/javascript" src="index.js"></script>
 </body>
