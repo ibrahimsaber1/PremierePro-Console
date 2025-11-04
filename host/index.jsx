@@ -1,10 +1,31 @@
 // Main function to execute code from the console
 function executeConsoleCode(codeString) {
+    // Capture $.writeln output
+    var outputBuffer = [];
+    var originalWriteln = $.writeln;
+    
+    // Override $.writeln to capture output
+    $.writeln = function(text) {
+        outputBuffer.push(String(text));
+        originalWriteln.apply($, arguments); // Also write to ESTK console
+    };
+    
     try {
         // Direct evaluation approach for multi-line code
         var result = eval(codeString);
+        
+        // Restore original $.writeln
+        $.writeln = originalWriteln;
+        
+        // If there was output from $.writeln, return it
+        if (outputBuffer.length > 0) {
+            return "OUTPUT:\n" + outputBuffer.join("\n") + "\n\nRESULT:\n" + formatResult(result);
+        }
+        
         return formatResult(result);
     } catch (e) {
+        // Restore original $.writeln
+        $.writeln = originalWriteln;
         return "ERROR:" + e.toString();
     }
 }
@@ -114,4 +135,16 @@ function formatObject(obj) {
     } catch (e) {
         return "[Error formatting object: " + e.toString() + "]";
     }
+}
+
+// Additional utility functions for debugging
+
+// Print function that returns output
+function print(text) {
+    return String(text);
+}
+
+// Alert wrapper
+function alert(message) {
+    return "ALERT: " + String(message);
 }
