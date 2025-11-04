@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionList>
-    <Extension Id="ccom.yourname.premiereconsole.panel">
+    <Extension Id="com.ibrahimsaber.premiereconsole.panel">
         <HostList>
-            <Host Name="PPRO" Port="8000"/>
+            <Host Name="PPRO" Port="8099"/>
         </HostList>
     </Extension>
 </ExtensionList>

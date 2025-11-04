@@ -1,4 +1,7 @@
 // Premiere Pro Console - Main Application Logic
+
+window.csInterface = new CSInterface();
+
 (function() {
     'use strict';
 
@@ -169,6 +172,22 @@
         }
 
     }
+
+    // Make openExternalLink globally available - FIX FOR THE ERROR
+    window.openExternalLink = function(url) {
+        try {
+            if (csInterface && typeof csInterface.openURLInDefaultBrowser === 'function') {
+                csInterface.openURLInDefaultBrowser(url);
+            } else if (window.cep && window.cep.util) {
+                window.cep.util.openURLInDefaultBrowser(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        } catch (e) {
+            console.error('Error opening link:', e);
+            alert('Could not open link: ' + url);
+        }
+    };
 
     // Execute Code in ExtendScript
     function executeCode() {
@@ -346,68 +365,137 @@
         updateStatus('Snippet inserted', 'success');
     }
 
-    // Show Help Panel
-    function showHelpPanel() {
-        const overlay = createOverlay();
-        const modal = createModal('Premiere Pro Console Help', overlay);
-        modal.style.maxWidth = '700px';
+function showHelpPanel() {
+    const overlay = createOverlay();
+    const modal = createModal('', overlay); // Empty title, we'll add custom header
+    modal.style.maxWidth = '900px';
+    modal.style.maxHeight = '90vh';
+    
+    // Get current language from localStorage or default to English
+    let currentLang = localStorage.getItem('ppro_console_language') || 'en';
+    
+    // Function to render help content
+    function renderHelpContent(lang) {
+        const t = TRANSLATIONS[lang].help;
         
-        modal.innerHTML += `
-            <div class="help-content">
-                <section>
-                    <h3>🎯 Keyboard Shortcuts</h3>
-                    <table class="shortcuts-table">
-                        <tr><td><kbd>Ctrl + Enter</kbd></td><td>Execute code</td></tr>
-                        <tr><td><kbd>Ctrl + Space</kbd></td><td>Trigger autocomplete</td></tr>
-                        <tr><td><kbd>Ctrl + Shift + P</kbd></td><td>Open snippets menu</td></tr>
-                        <tr><td><kbd>Ctrl + S</kbd></td><td>Save code to local storage</td></tr>
-                        <tr><td><kbd>Ctrl + O</kbd></td><td>Load saved code</td></tr>
-                        <tr><td><kbd>F1</kbd></td><td>Show this help panel</td></tr>
-                        <tr><td><kbd>Tab</kbd></td><td>Insert 4 spaces</td></tr>
-                    </table>
+        modal.innerHTML = `
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #444; background: #3D3D3D;">
+                <h2 style="margin: 0; color: #61DAFB; font-size: 18px;">${t.title}</h2>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <select id="language-selector" style="background: #2D2D2D; color: #E0E0E0; border: 1px solid #555; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        ${Object.keys(TRANSLATIONS).map(code => `
+                            <option value="${code}" ${code === lang ? 'selected' : ''}>
+                                ${TRANSLATIONS[code].flag} ${TRANSLATIONS[code].name}
+                            </option>
+                        `).join('')}
+                    </select>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; color: #E0E0E0; font-size: 28px; cursor: pointer; padding: 0; width: 32px; height: 32px;">×</button>
+                </div>
+            </div>
+            
+            <div class="help-content" style="padding: 24px; overflow-y: auto; max-height: calc(90vh - 80px);">
+                <div style="text-align: center; margin-bottom: 32px;">
+                    <h1 style="color: #61DAFB; font-size: 28px; margin: 0 0 12px 0;">${t.welcome}</h1>
+                    <p style="color: #AAA; font-size: 14px; line-height: 1.6; max-width: 600px; margin: 0 auto;">${t.description}</p>
+                </div>
+                
+                <!-- Getting Started -->
+                <section style="margin-bottom: 32px;">
+                    <h2 style="color: #98C379; margin-bottom: 16px; font-size: 20px; border-bottom: 2px solid #98C379; padding-bottom: 8px;">
+                        🚀 ${t.sections.gettingStarted}
+                    </h2>
+                    <p style="color: #CCC; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">${t.gettingStarted.intro}</p>
+                    <ol style="color: #BBB; font-size: 13px; line-height: 1.8; padding-left: 20px;">
+                        ${t.gettingStarted.steps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
                 </section>
                 
-                <section>
-                    <h3>📚 Common Objects</h3>
-                    <ul class="api-list">
-                        <li><code>app</code> - Application object</li>
-                        <li><code>app.project</code> - Current project</li>
-                        <li><code>app.project.activeSequence</code> - Active sequence</li>
-                        <li><code>app.project.rootItem</code> - Project root folder</li>
-                        <li><code>sequence.markers</code> - Sequence markers</li>
-                        <li><code>sequence.videoTracks</code> - Video tracks</li>
-                        <li><code>sequence.audioTracks</code> - Audio tracks</li>
+                <!-- Shortcuts -->
+                <section style="margin-bottom: 32px;">
+                    <h2 style="color: #61DAFB; margin-bottom: 16px; font-size: 20px; border-bottom: 2px solid #61DAFB; padding-bottom: 8px;">
+                        ⌨️ ${t.sections.shortcuts}
+                    </h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
+                        ${t.shortcuts.map(s => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #252525; border-radius: 6px; border-left: 3px solid #61DAFB;">
+                                <kbd style="background: #1E1E1E; padding: 4px 8px; border-radius: 4px; font-size: 11px; color: #D19A66; font-family: monospace;">${s.keys}</kbd>
+                                <span style="color: #AAA; font-size: 12px;">${s.desc}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+                
+                <!-- Features -->
+                <section style="margin-bottom: 32px;">
+                    <h2 style="color: #C678DD; margin-bottom: 16px; font-size: 20px; border-bottom: 2px solid #C678DD; padding-bottom: 8px;">
+                        ✨ ${t.sections.features}
+                    </h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px;">
+                        ${t.features.map(f => `
+                            <div style="padding: 16px; background: #252525; border-radius: 8px; border-left: 4px solid #C678DD;">
+                                <h3 style="color: #E0E0E0; font-size: 15px; margin: 0 0 8px 0;">${f.title}</h3>
+                                <p style="color: #999; font-size: 12px; line-height: 1.6; margin: 0;">${f.desc}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+                
+                <!-- Code Examples -->
+                <section style="margin-bottom: 32px;">
+                    <h2 style="color: #D19A66; margin-bottom: 16px; font-size: 20px; border-bottom: 2px solid #D19A66; padding-bottom: 8px;">
+                        💡 ${t.sections.codeExamples}
+                    </h2>
+                    ${t.examples.map(ex => `
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: #E0E0E0; font-size: 14px; margin: 0 0 8px 0;">${ex.title}</h3>
+                            <pre style="background: #1E1E1E; padding: 14px; border-radius: 6px; border-left: 4px solid #D19A66; overflow-x: auto;"><code style="color: #98C379; font-size: 11px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.6;">${ex.code}</code></pre>
+                        </div>
+                    `).join('')}
+                </section>
+                
+                <!-- Tips -->
+                <section style="margin-bottom: 32px;">
+                    <h2 style="color: #E06C75; margin-bottom: 16px; font-size: 20px; border-bottom: 2px solid #E06C75; padding-bottom: 8px;">
+                        💡 ${t.sections.tips}
+                    </h2>
+                    <ul style="color: #BBB; font-size: 13px; line-height: 1.8; padding-left: 20px;">
+                        ${t.tips.map(tip => `<li>${tip}</li>`).join('')}
                     </ul>
                 </section>
                 
-                <section>
-                    <h3>💡 Quick Examples</h3>
-                    <div class="example-code">
-                        <strong>Get project name:</strong>
-                        <code>app.project.name</code>
+                <!-- Resources -->
+                <section style="margin-bottom: 16px;">
+                    <h2 style="color: #98C379; margin-bottom: 16px; font-size: 20px; border-bottom: 2px solid #98C379; padding-bottom: 8px;">
+                        📚 ${t.sections.resources}
+                    </h2>
+                    <div style="padding: 16px; background: #252525; border-radius: 8px; border-left: 4px solid #98C379;">
+                        <p style="color: #E0E0E0; font-size: 14px; margin: 0 0 12px 0; font-weight: 600;">${t.links.officialDocs}</p>
+                        <a href="#" onclick="window.openExternalLink('https://ppro-scripting.docsforadobe.dev/'); return false;" style="color: #61DAFB; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                            🔗 https://ppro-scripting.docsforadobe.dev/
+                            <span style="color: #999; font-size: 11px;">(${t.links.openLink})</span>
+                        </a>
                     </div>
-                    <div class="example-code">
-                        <strong>Count video tracks:</strong>
-                        <code>app.project.activeSequence.videoTracks.numTracks</code>
-                    </div>
-                    <div class="example-code">
-                        <strong>Get all markers:</strong>
-                        <code>app.project.activeSequence.markers.numMarkers</code>
-                    </div>
-                </section>
-                
-                <section>
-                    <h3>🔗 Resources</h3>
-                    <p>For complete API documentation, visit:</p>
-                    <p><strong>ppro-scripting.docsforadobe.dev</strong></p>
                 </section>
             </div>
         `;
         
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
+        // Add language selector event listener
+        const langSelector = modal.querySelector('#language-selector');
+        if (langSelector) {
+            langSelector.addEventListener('change', (e) => {
+                currentLang = e.target.value;
+                localStorage.setItem('ppro_console_language', currentLang);
+                renderHelpContent(currentLang);
+            });
+        }
     }
-
+    
+    // Initial render
+    renderHelpContent(currentLang);
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
     // Format Code (Basic)
     function formatCode() {
         let code = elements.codeInput.value;

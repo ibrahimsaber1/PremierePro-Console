@@ -791,28 +791,21 @@ CSInterface.prototype.getOSInformation = function()
 };
 
 /**
- * Opens a page in the default system browser.
- *
- * Since 4.2.0
- *
- * @param url  The URL of the page/file to open, or the email address.
- * Must use HTTP/HTTPS/file/mailto protocol. For example:
- *   "http://www.adobe.com"
- *   "https://github.com"
- *   "file:///C:/log.txt"
- *   "mailto:test@adobe.com"
- *
- * @return One of these error codes:\n
- *      <ul>\n
- *          <li>NO_ERROR - 0</li>\n
- *          <li>ERR_UNKNOWN - 1</li>\n
- *          <li>ERR_INVALID_PARAMS - 2</li>\n
- *          <li>ERR_INVALID_URL - 201</li>\n
- *      </ul>\n
+ * Opens a URL in the default browser
+ * 
+ * @param {string} url - The URL to open
  */
-CSInterface.prototype.openURLInDefaultBrowser = function(url)
-{
-    return cep.util.openURLInDefaultBrowser(url);
+CSInterface.prototype.openURLInDefaultBrowser = function(url) {
+    try {
+        if (window.cep) {
+            window.cep.util.openURLInDefaultBrowser(url);
+        } else {
+            window.open(url);
+        }
+    } catch (e) {
+        console.error('Error in openURLInDefaultBrowser:', e);
+        window.open(url);
+    }
 };
 
 /**
