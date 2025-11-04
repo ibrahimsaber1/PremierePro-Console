@@ -468,10 +468,35 @@ function showHelpPanel() {
                     <h2 style="color: #98C379; margin-bottom: 16px; font-size: 20px; border-bottom: 2px solid #98C379; padding-bottom: 8px;">
                         📚 ${t.sections.resources}
                     </h2>
+                    
+                    <!-- Author Credit -->
+                    <div style="padding: 16px; background: #252525; border-radius: 8px; border-left: 4px solid #61DAFB; margin-bottom: 12px;">
+                        <p style="color: #61DAFB; font-size: 14px; margin: 0 0 8px 0; font-weight: 600;">
+                            👨‍💻 ${t.links.author}
+                        </p>
+                        <a href="#" onclick="window.openExternalLink('https://github.com/ibrahimsaber1'); return false;" style="color: #98C379; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                            🔗 github.com/ibrahimsaber1
+                        </a>
+                    </div>
+                    
+                    <!-- GitHub Repository -->
+                    <div style="padding: 16px; background: #252525; border-radius: 8px; border-left: 4px solid #C678DD; margin-bottom: 12px;">
+                        <p style="color: #E0E0E0; font-size: 14px; margin: 0 0 8px 0; font-weight: 600;">
+                            🌟 ${t.links.githubRepo}
+                        </p>
+                        <a href="#" onclick="window.openExternalLink('https://github.com/ibrahimsaber1/PremierePro-Console'); return false;" style="color: #61DAFB; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                            🔗 github.com/ibrahimsaber1/PremierePro-Console
+                            <span style="color: #999; font-size: 11px;">(${t.links.contribute})</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Official Docs -->
                     <div style="padding: 16px; background: #252525; border-radius: 8px; border-left: 4px solid #98C379;">
-                        <p style="color: #E0E0E0; font-size: 14px; margin: 0 0 12px 0; font-weight: 600;">${t.links.officialDocs}</p>
+                        <p style="color: #E0E0E0; font-size: 14px; margin: 0 0 8px 0; font-weight: 600;">
+                            ${t.links.officialDocs}
+                        </p>
                         <a href="#" onclick="window.openExternalLink('https://ppro-scripting.docsforadobe.dev/'); return false;" style="color: #61DAFB; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
-                            🔗 https://ppro-scripting.docsforadobe.dev/
+                            🔗 ppro-scripting.docsforadobe.dev
                             <span style="color: #999; font-size: 11px;">(${t.links.openLink})</span>
                         </a>
                     </div>

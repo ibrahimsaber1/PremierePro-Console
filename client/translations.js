@@ -114,6 +114,9 @@ seq.exportAsMediaDirect(
             
             links: {
                 officialDocs: "Official Premiere Pro Scripting Documentation",
+                githubRepo: "GitHub Repository",
+                contribute: "Contribute & Report Issues",
+                author: "Created by Ibrahim Saber",
                 openLink: "Click to open in browser"
             }
         }
@@ -230,10 +233,13 @@ seq.exportAsMediaDirect(
                 "استخدم كتل try-catch للتعامل مع الأخطاء"
             ],
             
-            links: {
-                officialDocs: "وثائق برمجة Premiere Pro الرسمية",
-                openLink: "انقر للفتح في المتصفح"
-            }
+        links: {
+            officialDocs: "وثائق برمجة Premiere Pro الرسمية",
+            githubRepo: "مستودع GitHub",
+            contribute: "المساهمة والإبلاغ عن المشكلات",
+            author: "أنشأه إبراهيم صابر",
+            openLink: "انقر للفتح في المتصفح"
+        }
         }
     },
     
