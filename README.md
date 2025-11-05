@@ -228,9 +228,6 @@ If you prefer manual installation without using the `.zxp` package:
 - Make sure you're using Anastasiy's Extension Manager
 - Try reinstalling the extension
 
-**Still having issues?**
-- Check our [FAQ section](#troubleshooting) below
-
 ## 🚀 Getting Started
 
 ### Accessing the Extension
