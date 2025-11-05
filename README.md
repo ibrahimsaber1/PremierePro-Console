@@ -148,6 +148,88 @@ PremierePro-Console/
 │   └── console.png
 └── README.md
 ```
+## 📥 Download & Install
+
+### Quick Install (Recommended)
+
+**Download the latest version:**
+
+[![Latest Release](https://img.shields.io/github/v/release/ibrahimsaber1/PremierePro-Console?label=Latest%20Release&style=for-the-badge)](https://github.com/ibrahimsaber1/PremierePro-Console/releases/latest)
+
+1. **Download the `.zxp` file** from the [Releases page](https://github.com/ibrahimsaber1/PremierePro-Console/releases)
+2. **Install using [Anastasiy's Extension Manager](https://install.anastasiy.com/)**
+   - Launch the Extension Manager
+   - Click "Install" and select the downloaded `.zxp` file
+   - Restart Adobe Premiere Pro
+3. **Access the extension**: Go to `Window > Extensions > Premiere Console`
+
+### Available Versions
+
+#### 🎉 v2.0.0 - Feature-Rich Release (Latest)
+**[Download v2.0.0](https://github.com/ibrahimsaber1/PremierePro-Console/releases/tag/v2.0.0)**
+
+**What's New:**
+- ✨ Intelligent autocomplete with API suggestions
+- 📝 40+ ready-to-use code snippets
+- 📚 Complete interactive API documentation browser
+- 🌍 Multilingual support (15 languages)
+- 💾 Code persistence and save/load functionality
+- 🔍 Console output search and filtering
+- 🎨 Enhanced UI with modern design
+- ⚡ Improved performance and error handling
+
+**Perfect for:** Users who want a full-featured development environment with autocomplete, documentation, and code snippets.
+
+#### 🚀 v1.0.0 - Classic Release
+**[Download v1.0.0](https://github.com/ibrahimsaber1/PremierePro-Console/releases/tag/v1.0.0)**
+
+**Features:**
+- ⚡ Basic code execution
+- 📺 Simple console output
+- 🎹 Keyboard shortcuts
+- 🧹 Clean, lightweight interface
+
+**Perfect for:** Users who prefer a minimal, lightweight console without extra features.
+
+### Which Version Should I Choose?
+
+| Feature | v1.0.0 | v2.0.0 |
+|---------|---------|---------|
+| Execute ExtendScript Code | ✅ | ✅ |
+| Console Output | ✅ | ✅ |
+| Keyboard Shortcuts | ✅ | ✅ |
+| Intelligent Autocomplete | ❌ | ✅ |
+| Code Snippets Library | ❌ | ✅ |
+| API Documentation | ❌ | ✅ |
+| Multilingual Support | ❌ | ✅ |
+| Code Save/Load | ❌ | ✅ |
+| Search Console Output | ❌ | ✅ |
+| File Size | 65 kb | 127 kb |
+
+**💡 Recommendation:** Choose **v2.0.0** for the best experience with all modern features. Choose **v1.0.0** if you want a lightweight, minimal console.
+
+### Manual Installation (Advanced)
+
+If you prefer manual installation without using the `.zxp` package:
+
+1. Enable debug mode (see instructions above)
+2. Download the source code from [GitHub](https://github.com/ibrahimsaber1/PremierePro-Console)
+3. Copy to the CEP extensions folder (see installation instructions above)
+4. Restart Premiere Pro
+
+### Troubleshooting Installation
+
+**Extension doesn't show up after installation:**
+- Ensure you restarted Premiere Pro completely
+- Check if debug mode is enabled
+- Verify the extension is installed in the correct folder
+
+**Error: "Extension verification failed":**
+- Make sure you're using Anastasiy's Extension Manager
+- Try reinstalling the extension
+
+**Still having issues?**
+- Check our [FAQ section](#troubleshooting) below
 
 ## 🚀 Getting Started
 
@@ -194,18 +276,6 @@ while (marker) {
 }
 ```
 
-#### Export Sequence
-```
-// Export active sequence using preset
-var seq = app.project.activeSequence;
-var outputPath = "C:/Output/export.mp4";
-var presetPath = "C:/Presets/H264.epr";
-var workAreaType = 0; // 0=entire, 1=in-out, 2=work area
-
-seq.exportAsMediaDirect(outputPath, presetPath, workAreaType);
-$.writeln("Export started");
-```
-
 ### Advanced Examples
 
 #### List All Clips on All Video Tracks
@@ -241,23 +311,6 @@ for (var i = 0; i < markerTimes.length; i++) {
 $.writeln("Created " + markerTimes.length + " markers");
 ```
 
-#### Batch Rename Project Items
-```
-// Rename all clips in a bin with prefix
-function renameItemsInBin(bin, prefix) {
-    for (var i = 0; i < bin.children.numItems; i++) {
-        var item = bin.children[i];
-        if (item.type === 1) { // CLIP type
-            var newName = prefix + "_" + (i + 1) + "_" + item.name;
-            item.name = newName;
-            $.writeln("Renamed: " + newName);
-        }
-    }
-}
-
-var targetBin = app.project.rootItem.children; // First bin
-renameItemsInBin(targetBin, "SHOT");
-```
 
 ## 🛠️ API Documentation
 
@@ -355,24 +408,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Adobe CEP and ExtendScript teams for providing the framework
 - The Premiere Pro developer community for support and feedback
 - All contributors who help improve this extension
-
-## 📊 Version History
-
-### v2.0.0 (Latest)
-- ✨ Added intelligent autocomplete system
-- 📝 Integrated 40+ code snippets library
-- 📚 Added comprehensive API documentation browser
-- 🌍 Added multilingual support (15 languages)
-- 💾 Implemented code persistence and save/load
-- 🔍 Added console output search and filtering
-- 🎨 Enhanced UI with better styling and animations
-- ⚡ Improved execution performance and error handling
-
-### v1.0.0
-- 🎉 Initial release
-- Basic code execution functionality
-- Simple console output display
-
 ---
 
 ## ⭐ Star This Repository
